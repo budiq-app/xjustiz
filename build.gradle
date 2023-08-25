@@ -9,10 +9,12 @@ plugins {
     id 'java'
     id 'idea'
     id 'org.openrepose.gradle.plugins.jaxb' version '2.5.0'
-    id 'maven-publish'
+    id 'maven'
+    id 'signing'
 }
 
 group = 'app.budiq.os'
+archivesBaseName = 'xjustiz'
 version = '3.3.1-SNAPSHOT'
 description = 'BUDIQ library for the German xjustiz xml specification'
 sourceCompatibility = 11
@@ -65,14 +67,59 @@ jar {
     enabled = true
 }
 
-publishing {
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+uploadArchives {
     repositories {
-        maven {
-            name = "OSSRH"
-            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
+        mavenDeployer {
+
+            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: System.getenv("MAVEN_USERNAME"), password: System.getenv("MAVEN_PASSWORD"))
+            }
+
+            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: System.getenv("MAVEN_USERNAME"), password: System.getenv("MAVEN_PASSWORD"))
+            }
+
+            pom.project {
+                name 'xjustiz'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'BUDIQ library for the German xjustiz XML specification'
+                url 'https://github.com/budiq-app/xjustiz'
+
+                scm {
+                    url = 'https://github.com/budiq-app/xjustiz'
+                    connection = 'scm:git://github.com:budiq-app/xjustiz.git'
+                    developerConnection = 'scm:git://github.com:budiq-app/xjustiz.git'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'waigel'
+                        name 'Johannes Waigel'
+                        email 'waigel@budiq.app'
+                    }
+                }
             }
         }
     }
