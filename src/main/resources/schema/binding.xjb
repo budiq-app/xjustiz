@@ -6,7 +6,7 @@
     </jaxb:bindings>
 
 
-    <jaxb:bindings scd="x-schema::tns" xmlns:tns="http://www.xjustiz.de">
+    <jaxb:bindings schemaLocation="xjustiz_0400_register_3_2.xsd">
         <jaxb:schemaBindings>
             <jaxb:package name="app.budiq.os.xjustiz.xml" />
         </jaxb:schemaBindings>
