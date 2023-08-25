@@ -1,0 +1,79 @@
+import org.gradle.api.internal.file.collections.DefaultConfigurableFileCollection
+buildscript {
+    dependencies {
+        classpath "gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.5.0"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'org.openrepose.gradle.plugins.jaxb' version '2.5.0'
+    id 'maven-publish'
+}
+
+group = 'app.budiq.os'
+version = '3.3.1-SNAPSHOT'
+description = 'BUDIQ library for the German xjustiz xml specification'
+sourceCompatibility = 11
+targetCompatibility = 11
+
+
+repositories {
+    mavenCentral()
+}
+
+compileJava {
+    options.compilerArgs = ['-Xlint:unchecked']
+}
+
+tasks.withType(JavaCompile) {
+    options.bootstrapClasspath = files("$System.env.JAVA_HOME/jre/lib/rt.jar")
+}
+
+dependencies {
+    jaxb 'org.glassfish.jaxb:jaxb-xjc:2.3.6'
+}
+
+tasks.named("xsd-dependency-tree").configure {
+    outputs.upToDateWhen { false }
+}
+
+sourceSets.main.java.srcDirs += jaxb.xjc.destinationDir
+
+compileJava {
+    dependsOn xjc
+}
+
+
+dependencies {
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.6'
+}
+
+wrapper{
+    gradleVersion = '6.0'
+}
+
+
+task listJars doLast {
+    DefaultConfigurableFileCollection collection
+    collection = files { configurations.compile }
+    collection.collect { it.name }.sort().each { println it }
+}
+
+jar {
+    enabled = true
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
